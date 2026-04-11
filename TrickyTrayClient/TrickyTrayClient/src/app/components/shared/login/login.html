@@ -1,0 +1,15 @@
+<div class="auth-container" dir="rtl">
+    
+
+  </div><div class="auth-content">
+    <h2 class="title">התחברות</h2>
+    <form (ngSubmit)="login()">
+      <div class="form-group">
+        <input [(ngModel)]="model.email" name="email" type="email" class="modern-input" placeholder="אימייל" required>
+      </div>
+      <div class="form-group">
+        <input [(ngModel)]="model.password" name="password" type="password" class="modern-input" placeholder="סיסמה" required>
+      </div>
+      <button type="submit" class="btn-primary">כניסה</button>
+    </form>
+  </div>

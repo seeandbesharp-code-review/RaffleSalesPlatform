@@ -1,0 +1,134 @@
+// .timer-wrapper {
+//   background: #000000;
+//   padding: 30px 0;
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   border-bottom: 1px solid #1a1a1a;
+//   font-family: 'Assistant', sans-serif;
+// }
+
+// .timer-text {
+//   margin-bottom: 20px;
+//   font-size: 0.8rem;
+//   font-weight: 300;
+//   color: #ffffff; /* לבן מלא כדי שיהיה קריא */
+//   letter-spacing: 5px;
+//   text-transform: uppercase;
+//   opacity: 0.9;
+// }
+
+// .units-container {
+//   display: flex;
+//   align-items: center;
+//   gap: 12px;
+//   direction: ltr; /* זמן תמיד משמאל לימין */
+// }
+
+// .unit {
+//   display: flex;
+//   flex-direction: column;
+//   align-items: center;
+//   justify-content: center;
+//   border: 1px solid #333; /* מסגרת דקה ועדינה */
+//   padding: 15px 10px;
+//   min-width: 75px;
+//   border-radius: 4px; /* עיגול פינות מינימלי למראה קלאסי */
+//   background: linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
+// }
+
+// .unit .value {
+//   font-size: 2.5rem;
+//   font-weight: 200; /* פונט דק וחתיך */
+//   color: #ffffff; /* לבן בוהק */
+//   line-height: 1;
+//   margin-bottom: 5px;
+// }
+
+// .unit .label {
+//   font-size: 0.65rem;
+//   font-weight: 400;
+//   color: #666; /* האפור הזה נותן עומק ופוקוס למספרים */
+//   text-transform: uppercase;
+//   letter-spacing: 1px;
+// }
+
+// .separator {
+//   font-size: 1.2rem;
+//   color: #333;
+//   font-weight: 100;
+//   margin-top: -15px; /* איזון מול גובה הקוביות */
+// }
+
+// /* אפקט ה"הילה" העדין למסגרת כשעוברים עם העכבר */
+// .unit:hover {
+//   border-color: #555;
+//   transition: border-color 0.4s ease;
+// }
+
+.timer-wrapper {
+  background: #000000;
+  padding: 15px 0; /* צמצום משמעותי בגובה המעטפת */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid #1a1a1a;
+  font-family: 'Assistant', sans-serif;
+}
+
+.timer-text {
+  margin-bottom: 10px; /* פחות רווח בין הטקסט למספרים */
+  font-size: 0.7rem; /* טקסט קצת יותר קטן */
+  font-weight: 300;
+  color: #ffffff;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.units-container {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* צמצום הרווח בין הקוביות */
+  direction: ltr;
+}
+
+.unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #222; /* מסגרת עוד יותר עדינה */
+  padding: 8px 5px; /* צמצום דרסטי של הגובה הפנימי */
+  min-width: 60px; /* רוחב צר יותר */
+  border-radius: 2px;
+  background: linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
+}
+
+.unit .value {
+  font-size: 1.8rem; /* הקטנה של המספרים כדי שיתאימו לגובה החדש */
+  font-weight: 200;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.unit .label {
+  font-size: 0.55rem; /* כיתוב יחידות קטן יותר */
+  font-weight: 400;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.separator {
+  font-size: 1rem;
+  color: #222;
+  font-weight: 100;
+  margin-top: -10px;
+}
+
+.unit:hover {
+  border-color: #444;
+  transition: border-color 0.4s ease;
+}

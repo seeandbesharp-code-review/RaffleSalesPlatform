@@ -1,0 +1,39 @@
+<div class="admin-dashboard" dir="rtl">
+  <header class="dashboard-header">
+    <h2 class="title-main">ניהול מערכת</h2>
+  </header>
+
+  <div class="action-flex-container">
+    <button class="action-rect primary-rect" (click)="onStartButtonClick()">
+      <i class="bi bi-play-circle"></i>
+      <span class="label">התחלת מכירה</span>
+    </button>
+    
+    <button class="action-rect outline-rect" (click)="onFinishButtonClick()">
+      <i class="bi bi-trophy"></i>
+      <span class="label">ביצוע הגרלה</span>
+    </button>
+
+    <button class="action-rect outline-rect" (click)="onResetButtonClick()">
+      <i class="bi bi-arrow-repeat"></i>
+      <span class="label">איפוס מערכת</span>
+    </button>
+  </div>
+
+  <div class="table-section" *ngIf="winners.length > 0">
+    <table class="slim-table">
+      <thead>
+        <tr>
+          <th>מתנה</th>
+          <th>שם הזוכה</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let w of winners">
+          <td class="gift-col">{{ w.giftName }}</td>
+          <td class="winner-col">{{ w.winnerName }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

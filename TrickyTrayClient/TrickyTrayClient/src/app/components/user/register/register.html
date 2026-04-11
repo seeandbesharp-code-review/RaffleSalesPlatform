@@ -1,0 +1,11 @@
+<div class="auth-content">
+  <h2 class="title">הרשמה</h2>
+  <form (ngSubmit)="register()">
+    <div class="form-group"><input class="modern-input" placeholder="שם מלא" [(ngModel)]="model.name" name="name" required></div>
+    <div class="form-group"><input class="modern-input" type="email" placeholder="אימייל" [(ngModel)]="model.email" name="email" required></div>
+    <div class="form-group"><input class="modern-input" type="password" placeholder="סיסמה" [(ngModel)]="model.password" name="password" required></div>
+    <div class="form-group"><input class="modern-input" placeholder="טלפון" [(ngModel)]="model.phone" name="phone" required></div>
+    <div class="form-group"><input class="modern-input" placeholder="תעודת זהות" [(ngModel)]="model.identityNumber" name="identityNumber" required></div>
+    <button type="submit" class="btn-primary">צור חשבון</button>
+  </form>
+</div>

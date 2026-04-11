@@ -1,0 +1,158 @@
+$fuchsia: #d63384;
+
+.admin-reports-container {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Assistant', sans-serif;
+
+  // עיצוב הכותרת
+  .report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 25px;
+
+    .title-main { font-size: 28px; font-weight: 800; margin: 0; }
+  }
+}
+
+// כרטיס סך הכנסות (השחור)
+.revenue-summary-card {
+  background: #000;
+  color: #fff;
+  padding: 20px 40px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+
+  .rev-label { font-size: 12px; opacity: 0.8; text-transform: uppercase; }
+  .rev-amount { font-size: 32px; font-weight: 800; margin-top: 5px; }
+  .rev-decoration { 
+    position: absolute; bottom: 0; right: 0; width: 100%; height: 4px; background: $fuchsia; 
+  }
+}
+
+// בר כפתורי המיון
+.actions-bar {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: flex-end;
+  
+  .sort-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    .sort-label { font-size: 13px; font-weight: 600; }
+  }
+}
+
+.sort-btn {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.active { background: #000; color: #fff; border-color: #000; }
+  &:hover:not(.active) { border-color: $fuchsia; color: $fuchsia; }
+}
+
+// עיצוב הטבלה הקלאסית
+.table-card {
+  background: #fff;
+  border: 1px solid #eee;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+.classic-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th {
+    background: #fcfcfc;
+    padding: 18px;
+    text-align: right;
+    font-size: 13px;
+    color: #999;
+    border-bottom: 1px solid #eee;
+  }
+
+  td { padding: 18px; border-bottom: 1px solid #f9f9f9; font-size: 15px; }
+}
+
+.fuchsia-badge {
+  background: #fff0f6;
+  color: $fuchsia;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid rgba($fuchsia, 0.2);
+}
+
+.btn-view-purchasers {
+  background: none;
+  border: 1px solid #000;
+  color: #000;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover { background: #000; color: #fff; }
+}
+
+/* העיצוב של המודאל ששלחת - מוטמע כאן */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(5px);
+  display: flex; justify-content: center; align-items: center; z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-card {
+  background: #fff;
+  width: 550px;
+  max-height: 80vh;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+  display: flex; flex-direction: column;
+}
+
+.modal-header-fuchsia {
+  background: #000; color: #fff; padding: 20px;
+  border-bottom: 4px solid $fuchsia;
+  display: flex; justify-content: space-between; align-items: center;
+  h3 { margin: 0; font-size: 18px; font-weight: 700; }
+  .close-x { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+}
+
+.modal-body {
+  padding: 20px; overflow-y: auto;
+  .buyers-table {
+    width: 100%; border-collapse: collapse;
+    th { text-align: right; padding: 12px; border-bottom: 2px solid #eee; color: #888; font-size: 13px; }
+    td { padding: 12px; border-bottom: 1px solid #f9f9f9; font-size: 14px; }
+  }
+}
+
+.modal-footer {
+  padding: 15px 20px; background: #f9f9f9; display: flex; justify-content: flex-end;
+  .btn-cancel { 
+    background: #000; color: #fff; border: none; padding: 8px 25px; 
+    border-radius: 4px; cursor: pointer; font-weight: 600; 
+    &:hover { background: $fuchsia; }
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

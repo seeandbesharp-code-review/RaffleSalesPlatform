@@ -1,0 +1,16 @@
+<div class="modal-backdrop" (click)="closeModal()"></div>
+<div class="modal-box">
+  <button class="close-btn" (click)="closeModal()">✕</button>
+
+  @if (mode === 'login') {
+    <app-login (success)="closeModal()"></app-login>
+    <div class="switch-container">
+      חדש כאן? <span (click)="switchMode()">צור חשבון חדש</span>
+    </div>
+  } @else {
+    <app-register (success)="closeModal()"></app-register>
+    <div class="switch-container">
+      כבר רשום? <span (click)="switchMode()">התחבר למערכת</span>
+    </div>
+  }
+</div>

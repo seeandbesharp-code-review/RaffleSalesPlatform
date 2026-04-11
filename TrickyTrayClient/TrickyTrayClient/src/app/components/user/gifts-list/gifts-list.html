@@ -1,0 +1,80 @@
+<div class="gifts-page-container" dir="rtl">
+
+  @if (isLoading()) {
+  <div class="loader-container">
+    <div class="spinner"></div>
+    <p class="status-subtitle">טוען את קולקציית PRESTIGE...</p>
+  </div>
+  }
+  @else {
+  @switch (currentStatus()) {
+
+  @case ('active') {
+  <div class="modern-gallery">
+    @for (gift of gifts(); track gift.id) {
+    <div class="gift-card">
+      <div class="gift-image-wrapper">
+        <div class="clickable-area" (click)="navigateToGift(gift.id)">
+          <div class="price-badge">{{ gift.price }} ₪</div>
+          <img [src]="gift.imageUrl" class="gift-img">
+        </div>
+
+        <button class="add-to-cart-btn" (click)="addToCart(gift.id)">
+          <i class="bi bi-cart-plus"></i> הוספה לסל
+        </button>
+      </div>
+
+      <div class="gift-info">
+        <h3 class="gift-title">{{ gift.name }}</h3>
+        <p class="donor-name">נתרם ע"י: {{ gift.donorName }}</p>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  @case ('finished') {
+  <div class="sale-ended-view">
+    <div class="status-message-container">
+      <i class="bi bi-trophy status-icon gold-glow"></i>
+      <h2 class="status-title">המכירה הסתיימה</h2>
+      <div class="divider-gold"></div>
+      <p class="status-subtitle">אנו מודים לכל המשתתפים. להלן תוצאות ההגרלה ורשימת השותפים שלנו.</p>
+    </div>
+
+    <div class="honor-section">
+      <h3 class="section-title"><i class="bi bi-stars"></i> הזוכים המאושרים</h3>
+      <div class="winners-list">
+        @for (winner of winners(); track winner.giftId) {
+        <div class="winner-card">
+          <div class="winner-gift-name">{{ winner.giftName }}</div>
+          <div class="winner-person-name">
+            <i class="bi bi-person-check"></i> זוכה: <strong>{{ winner.userName }}</strong>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="honor-section">
+      <h3 class="section-title"><i class="bi bi-heart-fill"></i> נבחרת התורמים</h3>
+      <div class="donors-grid">
+        @for (donor of donors(); track donor.id) {
+        <div class="donor-tag">{{ donor.name }}</div>
+        }
+      </div>
+    </div>
+  </div>
+  }
+
+  @default {
+  <div class="status-message-container">
+    <i class="bi bi-stars status-icon pulse"></i>
+    <h2 class="status-title">בקרוב...</h2>
+    <div class="divider-gold"></div>
+    <p class="status-subtitle">קולקציית המתנות היוקרתית נחשפת בקרוב. המכירה טרם החלה.</p>
+  </div>
+  }
+  }
+  }
+</div>

@@ -1,0 +1,19 @@
+.global-toast {
+  position: fixed;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+
+  min-width: 300px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+
+  &.success { background-color: #d4af37; }
+  &.error { background-color: #c0392b; }
+}

@@ -1,0 +1,49 @@
+<div class="cart-drawer-overlay" (click)="closeCart()">
+  <div class="cart-drawer" (click)="$event.stopPropagation()">
+
+    <div class="drawer-header">
+      <h3>סל קניות</h3>
+      <button class="close-btn" (click)="closeCart()">&times;</button>
+    </div>
+
+    <div class="drawer-content">
+      @if (groupedItems.length === 0) {
+      <div class="empty-state">
+        <p>הסל שלך מחכה להתמלא...</p>
+      </div>
+      } @else {
+      <div class="items-scroll">
+        @for (item of groupedItems; track item.giftId) {
+        <div class="slim-item">
+
+          <div class="item-img-mini">
+<img [src]="'./images/' + item.imageUrl" alt="{{ item.giftName }}">          </div>
+
+          <div class="item-info">
+            <span class="name">{{ item.giftName }}</span>
+            <span class="price-tag">{{ item.price }} ₪</span>
+          </div>
+
+          <div class="qty-control">
+            <button (click)="updateQuantity(item.giftId, 1)">+</button>
+            <span class="qty-count">{{ item.quantity }}</span>
+            <button (click)="updateQuantity(item.giftId, -1)" [disabled]="item.quantity <= 1">-</button>
+          </div>
+
+        </div>
+        }
+      </div>
+      }
+    </div>
+
+    @if (cart && cart.items.length > 0) {
+    <div class="drawer-footer">
+      <div class="total-line">
+        <span>סה"כ</span>
+        <strong>{{ cart.totalPrice }} ₪</strong>
+      </div>
+      <button class="checkout-btn" (click)="goToCheckout()">לתשלום מאובטח</button>
+    </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,110 @@
+.admin-dashboard {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 50px 20px;
+    font-family: 'Assistant', sans-serif;
+  }
+  
+  .title-main {
+    font-weight: 700;
+    font-size: 2.2rem;
+    color: var(--main-black);
+    text-align: center;
+    margin-bottom: 45px;
+  }
+  
+  .action-flex-container {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-bottom: 70px;
+  }
+  
+  .action-rect {
+    flex: 1;
+    max-width: 260px; /* הגדלנו מ-220 */
+    height: 110px;    /* הגדלנו מ-90 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0 25px;
+  }
+  
+  .action-rect i {
+    font-size: 1.8rem;
+  }
+  
+  .action-rect .label {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  /* כפתור שחור */
+  .primary-rect {
+    background: var(--main-black);
+    color: rgb(7, 7, 7);
+    border: none;
+  }
+  
+  .primary-rect:hover {
+    background: var(--fuchsia-pink);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(255, 0, 127, 0.25);
+  }
+  
+  /* כפתורים לבנים עם Hover בהיר */
+  .outline-rect {
+    background: white;
+    border: 1px solid #e0e0e0;
+    color:black;
+  }
+  
+  .outline-rect:hover {
+    background: #fffafa; /* ורוד בהיר מאוד (כמעט לבן) */
+    border-color: var(--fuchsia-pink);
+    color: var(--fuchsia-pink);
+    transform: translateY(-2px);
+  }
+  
+  /* --- טבלה דקה ו"חתיכה" --- */
+  .slim-table {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    border-collapse: collapse;
+  }
+  
+  .slim-table th {
+    text-align: right;
+    padding: 12px 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #999; /* כותרת אפורה דקה */
+    text-transform: uppercase;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .slim-table td {
+    padding: 20px;
+    border-bottom: 1px solid #f2f2f2;
+    font-size: 1.05rem;
+    color: var(--main-black);
+  }
+  
+  .gift-col {
+    font-weight: 300; /* דק וחתיך */
+  }
+  
+  .winner-col {
+    color: var(--fuchsia-pink);
+    font-weight: 700;
+    text-align: left; /* יישור שמאלה יוצר מראה של "רשימה מודרנית" */
+  }
+  
+  .slim-table tr:last-child td {
+    border-bottom: none;
+  }

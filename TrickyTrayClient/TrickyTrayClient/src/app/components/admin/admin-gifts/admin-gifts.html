@@ -1,0 +1,84 @@
+<div class="admin-gifts-container" dir="rtl" *ngIf="state$ | async as state">
+  
+  <header class="admin-header">
+    <div class="header-right-side">
+      <h2 class="title-main">ניהול מתנות</h2>
+      <div class="status-indicator" [class.locked]="isLocked">
+        <i class="bi" [class.bi-lock-fill]="isLocked" [class.bi-unlock-fill]="!isLocked"></i>
+        <span>סטטוס מערכת: {{ isLocked ? 'נעול (צפייה בלבד)' : 'פתוח לעריכה' }}</span>
+      </div>
+    </div>
+
+    <button class="btn-add-fuchsia" (click)="openGiftDialog()" [disabled]="isLocked">
+      <i class="bi bi-plus-lg"></i>
+      <span>הוספת מתנה</span>
+    </button>
+  </header>
+
+  <div class="table-wrapper">
+    <table class="classic-admin-table">
+      <thead>
+        <tr>
+          <th style="width: 80px;">תמונה</th>
+          <th>שם המתנה</th>
+          <th>תורם</th>
+          <th>מחיר</th>
+          <th class="text-center">פעולות</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (gift of gifts(); track gift.id) {
+          <tr [class.is-locked-row]="isLocked">
+            <td>
+              <img [src]="gift.imageUrl || 'assets/placeholder-gift.png'" class="table-img">
+            </td>
+            <td><span class="font-bold">{{ gift.name }}</span></td>
+            <td><span class="text-secondary">{{ gift.donorName }}</span></td>
+            <td><span class="price-text">₪ {{ gift.price }}</span></td>
+            <td class="actions-cell">
+              <button class="action-btn edit" (click)="openGiftDialog(gift)" [disabled]="isLocked">עריכה</button>
+              <button class="action-btn delete" (click)="delete(gift.id)" [disabled]="isLocked">מחיקה</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header-prestige">
+        <h3>{{ selectedGift.id ? 'עריכת מתנה' : 'הוספת מתנה חדשה' }}</h3>
+        <button class="close-x" (click)="closeForm()">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label>שם המתנה</label>
+          <input [(ngModel)]="selectedGift.name" class="prestige-input" placeholder="הכנס שם מתנה">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>מחיר</label>
+            <input [(ngModel)]="selectedGift.price" type="number" class="prestige-input" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label>שם התורם</label>
+            <input [(ngModel)]="selectedGift.donorName" class="prestige-input" placeholder="שם התורם">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>קישור לתמונה</label>
+          <input [(ngModel)]="selectedGift.imageUrl" class="prestige-input" placeholder="URL">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeForm()">ביטול</button>
+        <button class="btn-save-fuchsia" (click)="save()" [disabled]="isLocked || !selectedGift.name">שמירה</button>
+      </div>
+    </div>
+  </div>
+</div>

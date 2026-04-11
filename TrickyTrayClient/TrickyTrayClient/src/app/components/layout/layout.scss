@@ -1,0 +1,23 @@
+:host {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important; /* מבטיח שהלייאאוט עצמו יתפרס על הכל */
+  width: 100%;
+}
+
+main {
+  flex: 1 0 auto !important; /* אומר לתוכן: "קח את כל המקום שנשאר" */
+  display: flex;
+  flex-direction: column;
+}
+
+app-footer {
+  flex-shrink: 0 !important; /* מונע ממנו להתכווץ */
+  margin-top: auto !important; /* דחיפה קריטית לסוף המיכל */
+  flex-shrink: 0;
+}
+
+/* מוודא שהדר ותזמון לא נעלמים */
+app-header, app-timer {
+  flex-shrink: 0 !important;
+}

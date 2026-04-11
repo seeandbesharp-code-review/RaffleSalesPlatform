@@ -1,0 +1,27 @@
+@if (gift()) {
+  <div class="gift-details-page">
+    <div class="image-section">
+      <img [src]="gift().imageUrl" [alt]="gift().name">
+    </div>
+
+    <div class="info-section">
+      <span class="donor-tag">נתרם ע"י: {{ gift().donorName }}</span>
+      <h1 class="gift-title">{{ gift().name }}</h1>
+      <p class="description">{{ gift().description }}</p>
+
+      <div class="action-area">
+        <div class="price-display">{{ gift().price }} ₪</div>
+        <button class="add-btn" (click)="addToCart(gift().id)">הוספה לסל הקניות</button>
+      </div>
+      
+      <a routerLink="/gifts" style="margin-top: 20px; color: #999; text-decoration: none; font-size: 0.8rem;">
+        <i class="bi bi-arrow-right"></i> חזרה לכל המתנות
+      </a>
+    </div>
+  </div>
+} @else {
+  <div class="loader-container">
+    <div class="spinner"></div>
+    <p>טוען את פרטי המתנה...</p>
+  </div>
+}

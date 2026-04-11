@@ -1,0 +1,83 @@
+<div class="admin-gifts-container" dir="rtl" *ngIf="state$ | async as state">
+  
+  <header class="admin-header">
+    <div class="header-right-side">
+      <h2 class="title-main">ניהול תורמים</h2>
+      <div class="status-indicator" [class.locked]="isLocked">
+        <i class="bi" [class.bi-lock-fill]="isLocked" [class.bi-unlock-fill]="!isLocked"></i>
+        <span>סטטוס מערכת: {{ isLocked ? 'נעול (צפייה בלבד)' : 'פתוח לעריכה' }}</span>
+      </div>
+    </div>
+
+    <button class="btn-add-fuchsia" (click)="openDonorDialog()" [disabled]="isLocked">
+      <i class="bi bi-person-plus-fill"></i>
+      <span>הוספת תורם</span>
+    </button>
+  </header>
+
+  <div class="search-bar-prestige" style="margin-bottom: 20px; display: flex; gap: 10px;">
+    <input [(ngModel)]="filterName" (input)="onSearch()" class="prestige-input" style="max-width: 250px;" placeholder="חפש לפי שם...">
+    <input [(ngModel)]="filterEmail" (input)="onSearch()" class="prestige-input" style="max-width: 250px;" placeholder="חפש לפי אימייל...">
+  </div>
+
+  <div class="table-wrapper">
+    <table class="classic-admin-table">
+      <thead>
+        <tr>
+          <th>שם מלא</th>
+          <th>כתובת אימייל</th>
+          <th>טלפון</th>
+          <th class="text-center">פעולות</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (donor of donors(); track donor.id) {
+          <tr [class.is-locked-row]="isLocked">
+            <td><span class="font-bold">{{ donor.name }}</span></td>
+            <td><span class="text-secondary">{{ donor.email }}</span></td>
+            <td><span class="price-text">{{ donor.phone }}</span></td>
+            <td class="actions-cell">
+              <button class="action-btn edit" (click)="openDonorDialog(donor)" [disabled]="isLocked">עריכה</button>
+              <button class="action-btn delete" (click)="delete(donor.id)" [disabled]="isLocked">מחיקה</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 40px; color: #999;">אין תורמים להצגה.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header-prestige">
+        <h3>{{ selectedDonor.id ? 'עריכת פרטי תורם' : 'הוספת תורם חדש' }}</h3>
+        <button class="close-x" (click)="closeForm()">&times;</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label>שם מלא</label>
+          <input [(ngModel)]="selectedDonor.name" class="prestige-input" placeholder="שם התורם">
+        </div>
+        
+        <div class="form-group">
+          <label>אימייל</label>
+          <input [(ngModel)]="selectedDonor.email" type="email" class="prestige-input" placeholder="email@example.com">
+        </div>
+
+        <div class="form-group">
+          <label>מספר טלפון</label>
+          <input [(ngModel)]="selectedDonor.phone" class="prestige-input" placeholder="050-0000000">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeForm()">ביטול</button>
+        <button class="btn-save-fuchsia" (click)="save()" [disabled]="isLocked || !selectedDonor.name">שמירה</button>
+      </div>
+    </div>
+  </div>
+</div>

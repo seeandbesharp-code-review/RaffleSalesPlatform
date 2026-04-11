@@ -1,0 +1,51 @@
+<div style="direction: rtl; padding: 30px; max-width: 700px; margin: 40px auto; font-family: sans-serif; border: 1px solid #ddd; border-radius: 8px;">
+  
+    @if (currentStep === 1) {
+      <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">סיכום פרטי ההזמנה</h2>
+      
+      <div style="margin: 20px 0;">
+        @for (item of groupedItems(); track item.giftId) {
+          <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #fafafa;">
+            <span>{{ item.giftName }} <strong>(x{{ item.qty }})</strong></span>
+            <span>{{ item.price * item.qty }} ₪</span>
+          </div>
+        }
+      </div>
+  
+      <div style="font-size: 1.3em; font-weight: bold; text-align: left; margin: 20px 0;">
+        סה"כ לתשלום: {{ cart()?.totalPrice }} ₪
+      </div>
+  
+      <button (click)="nextStep()" style="width: 100%; padding: 15px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; font-size: 1.1em;">
+        המשך לתשלום מאובטח
+      </button>
+    }
+  
+    @if (currentStep === 2) {
+      <div style="display: flex; align-items: center; margin-bottom: 20px;">
+          <button (click)="prevStep()" style="background: none; border: none; cursor: pointer; color: #007bff; font-size: 1em;">→ חזרה לסיכום</button>
+          <h2 style="margin: 0 auto;">פרטי תשלום</h2>
+      </div>
+  
+      <form [formGroup]="paymentForm" (ngSubmit)="finishOrder()">
+        <div style="margin-bottom: 15px;">
+          <label>שם מלא:</label>
+          <input type="text" formControlName="fullName" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+  
+        <div style="margin-bottom: 15px;">
+          <label>מספר כרטיס:</label>
+          <input type="text" formControlName="cardNumber" maxlength="16" placeholder="16 ספרות" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+  
+        <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+          <input type="text" formControlName="expiry" placeholder="MM/YY" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+          <input type="text" formControlName="cvv" placeholder="CVV" maxlength="3" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+  
+        <button type="submit" [disabled]="paymentForm.invalid" style="width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 5px; font-size: 1.2em; cursor: pointer;">
+          אישור וביצוע תשלום ({{ cart()?.totalPrice }} ₪)
+        </button>
+      </form>
+    }
+  </div>

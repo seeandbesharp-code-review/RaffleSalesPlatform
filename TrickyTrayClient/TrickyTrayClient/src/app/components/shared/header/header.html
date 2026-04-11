@@ -1,0 +1,59 @@
+<header class="main-header">
+  <div class="header-container">
+    
+    <div class="right-section">
+      
+      <div class="logo" [routerLink]="(authService.isAdmin$ | async) ? '/admin/manage-gifts' : '/gifts'">
+        <span class="logo-text">PRESTIGE</span>
+   
+        
+      </div>
+      
+    </div>
+    
+
+    <nav class="middle-section">
+      @if (authService.isAdmin$ | async) {
+        <div class="admin-nav">
+          <a routerLink="/admin/manage-gifts" routerLinkActive="active">ניהול מתנות</a>
+          <a routerLink="/admin/manage-donors" routerLinkActive="active">ניהול תורמים</a>
+          <a routerLink="/admin/manage-systemState" routerLinkActive="active">ניהול מערכת</a>
+          <a routerLink="/admin/reports" routerLinkActive="active">דוחות והזמנות</a>
+        </div>
+      }
+    </nav>
+
+    <div class="left-section">
+      <div class="user-menu">
+        <div class="user-trigger" (click)="handleUserClick()">
+          <i class="bi bi-person user-icon"></i>
+          <div class="user-info-box">
+            
+            @if (!(authService.isLoggedIn$ | async)) {
+              <span class="user-label">
+                {{ (authService.isLoggedIn$ | async) 
+                   ? ((authService.currentUser$ | async)?.unique_name || (authService.currentUser$ | async)?.name || 'משתמש') 
+                   : 'התחברות' }}
+              </span>
+            }
+          </div>
+        </div>
+    
+        @if (authService.isLoggedIn$ | async) {
+          <button class="logout-btn" (click)="logout()">התנתק</button>
+          
+        }
+      </div>
+    
+      @if (!(authService.isAdmin$ | async)) {
+        <div class="cart-wrapper" (click)="cartService.toggleCart(true)">
+          <i class="bi bi-bag user-icon"></i> 
+          <span class="cart-badge">{{ (cartService.cartItems()).length }}</span>
+        </div>
+      }
+    </div>
+
+  </div> @if (authService.loginModalVisible$ | async) {
+    <app-auth-modal (close)="closeAuthModal()"></app-auth-modal>
+  }
+</header>

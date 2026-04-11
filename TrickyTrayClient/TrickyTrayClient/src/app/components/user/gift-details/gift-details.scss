@@ -1,0 +1,87 @@
+.gift-details-page {
+    max-width: 1000px;
+    margin: 80px auto;
+    padding: 0 20px;
+    display: flex;
+    gap: 50px;
+    direction: rtl;
+    font-family: 'Assistant', sans-serif;
+  
+    @media (max-width: 768px) {
+      flex-direction: column;
+    }
+  }
+  
+  .image-section {
+    flex: 1;
+    background: #f9f9f9;
+    border: 1px solid #f0f0f0;
+    
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+      &:hover { transform: scale(1.02); }
+    }
+  }
+  
+  .info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  
+    .gift-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -1px;
+    }
+  
+    .donor-tag {
+      color: #d81b60;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 25px;
+      text-transform: uppercase;
+    }
+  
+    .description {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: #555;
+      font-weight: 300;
+      margin-bottom: 40px;
+    }
+  
+    .action-area {
+      border-top: 1px solid #eee;
+      padding-top: 30px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+  
+    .price-display {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #1a1a1a;
+    }
+  
+    .add-btn {
+      background: #1a1a1a;
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 1rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: #d81b60;
+        letter-spacing: 1px;
+      }
+    }
+  }

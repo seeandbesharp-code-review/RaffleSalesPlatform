@@ -1,0 +1,48 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+}
+
+.modal-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--white);
+  padding: 45px 35px;
+  width: 90%;
+  max-width: 380px;
+  z-index: 1001;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+  border-top: 6px solid var(--black); /* הפס העליון השחור */
+  border-radius: 4px;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  left: 15px; /* צד שמאל כי הדף ב-RTL */
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #999;
+  &:hover { color: var(--fuchsia); }
+}
+
+.switch-container {
+  margin-top: 25px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #666;
+  span {
+    color: var(--fuchsia);
+    font-weight: 700;
+    cursor: pointer;
+    margin-right: 5px;
+    &:hover { text-decoration: underline; }
+  }
+}

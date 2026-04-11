@@ -1,0 +1,31 @@
+<div class="timer-wrapper">
+    <p class="timer-text">ההזדמנות שלך מסתיימת בעוד:</p>
+    
+    <div class="units-container">
+      <div class="unit">
+        <span class="value">{{days}}</span>
+        <span class="label">ימים</span>
+      </div>
+      
+      <div class="separator">:</div>
+  
+      <div class="unit">
+        <span class="value">{{hours | number:'2.0'}}</span>
+        <span class="label">שעות</span>
+      </div>
+  
+      <div class="separator">:</div>
+  
+      <div class="unit">
+        <span class="value">{{minutes | number:'2.0'}}</span>
+        <span class="label">דקות</span>
+      </div>
+  
+      <div class="separator">:</div>
+  
+      <div class="unit">
+        <span class="value">{{seconds | number:'2.0'}}</span>
+        <span class="label">שניות</span>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,15 @@
+@if (notify.message()) {
+  <div class="global-toast" 
+       [class.success]="notify.type() === 'success'" 
+       [class.error]="notify.type() === 'error'">
+
+    <i class="bi" 
+       [class.bi-check-circle]="notify.type() === 'success'" 
+       [class.bi-exclamation-triangle]="notify.type() === 'error'">
+    </i>
+
+    {{ notify.message() }}
+  </div>
+}
+<app-layout>
+</app-layout>
