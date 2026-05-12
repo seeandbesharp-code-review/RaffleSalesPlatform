@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 using TrickyTrayAPI.Data;
 using TrickyTrayAPI.Repositories;
 using TrickyTrayAPI.Services;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -50,6 +52,12 @@ builder.Services.AddControllers().AddJsonOptions(o =>
 
 builder.Services.AddDbContext<TrickyTrayDbContext>(options => options.UseSqlServer(
     builder.Configuration.GetConnectionString("TrickyTrayConnection")));
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.InstanceName = "TrickyTray:";
+});
 
 builder.Services.AddScoped<IGiftRepository, GiftRepository>();
 builder.Services.AddScoped<IGiftService, GiftService>();
@@ -103,9 +111,23 @@ builder.Services.AddAuthentication(options =>
     };
     options.Events = new JwtBearerEvents
     {
+        OnMessageReceived = context =>
+        {
+            var token = context.Request.Cookies["access_token"];
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+            }
+
+            return Task.CompletedTask;
+        },
         OnAuthenticationFailed = context =>
         {
-            var logger = context.HttpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("Jwt");
+            var logger = context.HttpContext.RequestServices
+                .GetRequiredService<ILoggerFactory>()
+                .CreateLogger("Jwt");
+
             logger.LogError(context.Exception, "Authentication failed: {Message}", context.Exception.Message);
             return Task.CompletedTask;
         }
@@ -118,13 +140,27 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:4200")
               .AllowAnyHeader()
               .AllowAnyMethod()
+              .AllowCredentials()
     );
 });
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 20;             
+        limiterOptions.Window = TimeSpan.FromMinutes(1); 
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 var app = builder.Build();
 
 app.UseCors("ClientPolicy");
+app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {
@@ -137,6 +173,5 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
-
+app.MapControllers().RequireRateLimiting("fixed");
 app.Run();

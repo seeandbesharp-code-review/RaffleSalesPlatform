@@ -25,6 +25,14 @@ public class AuthController : ControllerBase
             return Unauthorized(new { message = "?? ????? ?? ????? ??????" });
         }
 
-        return Ok(new { token });
+        Response.Cookies.Append("access_token", token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTimeOffset.UtcNow.AddMinutes(60)
+        });
+
+        return Ok(new { message = "Login successful" });
     }
 }

@@ -1,6 +1,8 @@
 ﻿using TrickyTrayAPI.DTOs;
 using TrickyTrayAPI.Models;
 using TrickyTrayAPI.Repositories;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace TrickyTrayAPI.Services
 {
@@ -9,19 +11,52 @@ namespace TrickyTrayAPI.Services
         private readonly IGiftRepository _giftRepo;
         private readonly SystemStateService _systemStateService;
         private readonly IOrderGiftRepository _orderGiftRepository;
+        private readonly IDistributedCache _cache;
+        private readonly IConfiguration _configuration;
+        private const string AllGiftsCacheKey = "all_gifts";
 
-        public GiftService(IGiftRepository giftRepo, SystemStateService systemStateService, IOrderGiftRepository orderGiftRepository)
+        public GiftService(IGiftRepository giftRepo, SystemStateService systemStateService, IOrderGiftRepository orderGiftRepository,
+    IDistributedCache cache,
+    IConfiguration configuration)
         {
             _giftRepo = giftRepo;
             _systemStateService = systemStateService;
             _orderGiftRepository = orderGiftRepository;
+            _cache = cache;
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<GiftViewDto>> GetAllAsync()
         {
-            var gifts = await _giftRepo.GetAllAsync();
+            const string cacheKey = AllGiftsCacheKey;
+            var cachedData = await _cache.GetStringAsync(cacheKey);
 
-            return gifts.Select(b => MapToViewDto(b));
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                var cachedGifts = JsonSerializer.Deserialize<List<GiftViewDto>>(cachedData);
+                if (cachedGifts != null)
+                {
+                    return cachedGifts;
+                }
+            }
+
+            var gifts = await _giftRepo.GetAllAsync();
+            var result = gifts.Select(g => MapToViewDto(g)).ToList();
+
+            int expirationMinutes =
+                _configuration.GetValue<int>("Redis:CacheExpirationMinutes", 5);
+
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow =
+                    TimeSpan.FromMinutes(expirationMinutes)
+            };
+
+            var json = JsonSerializer.Serialize(result);
+
+            await _cache.SetStringAsync(cacheKey, json, options);
+
+            return result;
         }
 
         public async Task<GiftViewDto?> GetByIdAsync(int id)
@@ -62,7 +97,7 @@ namespace TrickyTrayAPI.Services
 
 
             var savedGift = await _giftRepo.CreateAsync(gift);
-
+            await _cache.RemoveAsync(AllGiftsCacheKey);
 
             return MapToViewDto(savedGift);
         }
@@ -86,6 +121,7 @@ namespace TrickyTrayAPI.Services
 
 
             var update = await _giftRepo.UpdateAsync(existingGift);
+            await _cache.RemoveAsync(AllGiftsCacheKey);
             return update != null ? MapToViewDto(update) : null;
         }
 
@@ -103,7 +139,13 @@ namespace TrickyTrayAPI.Services
                     throw new InvalidOperationException("Cannot delete gift that already has purchases");
             }
 
-            return await _giftRepo.DeleteAsync(id);
+            var deleted = await _giftRepo.DeleteAsync(id);
+
+            if (deleted)
+            {
+                await _cache.RemoveAsync(AllGiftsCacheKey);
+            }
+            return deleted;
         }
 
         public async Task<List<GiftViewDto>> SearchGiftsAsync(string? name, string? donorName, int? buyersCount)
