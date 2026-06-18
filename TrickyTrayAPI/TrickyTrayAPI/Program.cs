@@ -1,63 +1,96 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using TrickyTrayAPI.Data;
+using TrickyTrayAPI.Messaging;
 using TrickyTrayAPI.Repositories;
 using TrickyTrayAPI.Services;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-builder.Services.AddControllers()
+builder.Services
+    .AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-    });
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "Enter 'Bearer' followed by a space and the JWT token"
+        options.JsonSerializerOptions.ReferenceHandler =
+            ReferenceHandler.IgnoreCycles;
+
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
     });
 
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition(
+        "Bearer",
+        new OpenApiSecurityScheme
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            Name = "Authorization",
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description =
+                "Enter 'Bearer' followed by a space and the JWT token"
+        });
+
+    options.AddSecurityRequirement(
+        new OpenApiSecurityRequirement
+        {
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                new OpenApiSecurityScheme
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
 });
 
-builder.Services.AddControllers().AddJsonOptions(o =>
-    o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+var connectionString =
+    builder.Configuration.GetConnectionString("TrickyTrayConnection")
+    ?? throw new InvalidOperationException(
+        "Connection string 'TrickyTrayConnection' is missing.");
 
-builder.Services.AddDbContext<TrickyTrayDbContext>(options => options.UseSqlServer(
-    builder.Configuration.GetConnectionString("TrickyTrayConnection")));
+builder.Services.AddDbContext<TrickyTrayDbContext>(options =>
+{
+    options.UseSqlServer(connectionString);
+});
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    options.Configuration =
+        builder.Configuration["Redis:ConnectionString"];
+
     options.InstanceName = "TrickyTray:";
 });
+
+builder.Services
+    .AddOptions<KafkaSettings>()
+    .Bind(builder.Configuration.GetSection(KafkaSettings.SectionName))
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.BootstrapServers),
+        "Kafka BootstrapServers is required.")
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.Topic),
+        "Kafka Topic is required.")
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.ClientId),
+        "Kafka ClientId is required.")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<IKafkaProducer, KafkaProducer>();
 
 builder.Services.AddScoped<IGiftRepository, GiftRepository>();
 builder.Services.AddScoped<IGiftService, GiftService>();
@@ -81,85 +114,112 @@ builder.Services.AddScoped<RaffleService>();
 builder.Services.AddScoped<SystemStateRepository>();
 builder.Services.AddScoped<SystemStateService>();
 
-
-
 var jwtSection = builder.Configuration.GetSection("Jwt");
-var key = jwtSection.GetValue<string>("Key");
-var issuer = jwtSection.GetValue<string>("Issuer");
-var audience = jwtSection.GetValue<string>("Audience");
 
-if (string.IsNullOrWhiteSpace(key))
-{
-    throw new InvalidOperationException("JWT Key is missing in configuration.");
-}
+var jwtKey = jwtSection.GetValue<string>("Key")
+    ?? throw new InvalidOperationException(
+        "JWT Key is missing in configuration.");
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+var jwtIssuer = jwtSection.GetValue<string>("Issuer")
+    ?? throw new InvalidOperationException(
+        "JWT Issuer is missing in configuration.");
+
+var jwtAudience = jwtSection.GetValue<string>("Audience")
+    ?? throw new InvalidOperationException(
+        "JWT Audience is missing in configuration.");
+
+builder.Services
+    .AddAuthentication(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = issuer,
-        ValidAudience = audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-    };
-    options.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = context =>
-        {
-            var token = context.Request.Cookies["access_token"];
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
 
-            if (!string.IsNullOrEmpty(token))
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters =
+            new TokenValidationParameters
             {
-                context.Token = token;
-            }
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtKey))
+            };
 
-            return Task.CompletedTask;
-        },
-        OnAuthenticationFailed = context =>
+        options.Events = new JwtBearerEvents
         {
-            var logger = context.HttpContext.RequestServices
-                .GetRequiredService<ILoggerFactory>()
-                .CreateLogger("Jwt");
+            OnMessageReceived = context =>
+            {
+                var token =
+                    context.Request.Cookies["access_token"];
 
-            logger.LogError(context.Exception, "Authentication failed: {Message}", context.Exception.Message);
-            return Task.CompletedTask;
-        }
-    };
-});
+                if (!string.IsNullOrWhiteSpace(token))
+                {
+                    context.Token = token;
+                }
+
+                return Task.CompletedTask;
+            },
+
+            OnAuthenticationFailed = context =>
+            {
+                var logger = context.HttpContext.RequestServices
+                    .GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("Jwt");
+
+                logger.LogError(
+                    context.Exception,
+                    "Authentication failed: {Message}",
+                    context.Exception.Message);
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("ClientPolicy", policy =>
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials()
-    );
+    options.AddPolicy(
+        "ClientPolicy",
+        policy =>
+        {
+            policy
+                .WithOrigins("http://localhost:4200")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
 });
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("fixed", limiterOptions =>
-    {
-        limiterOptions.PermitLimit = 20;             
-        limiterOptions.Window = TimeSpan.FromMinutes(1); 
-        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        limiterOptions.QueueLimit = 0;
-    });
+    options.AddFixedWindowLimiter(
+        "fixed",
+        limiterOptions =>
+        {
+            limiterOptions.PermitLimit = 20;
+            limiterOptions.Window = TimeSpan.FromMinutes(1);
+            limiterOptions.QueueProcessingOrder =
+                QueueProcessingOrder.OldestFirst;
+            limiterOptions.QueueLimit = 0;
+        });
 
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.RejectionStatusCode =
+        StatusCodes.Status429TooManyRequests;
 });
 
 var app = builder.Build();
 
 app.UseCors("ClientPolicy");
+
 app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
@@ -173,5 +233,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers().RequireRateLimiting("fixed");
+app.MapControllers()
+    .RequireRateLimiting("fixed");
+
 app.Run();

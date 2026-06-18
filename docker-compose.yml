@@ -1,3 +1,5 @@
+name: trickytray
+
 services:
   api:
     build:
@@ -7,11 +9,36 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
-      - Redis__ConnectionString=redis:6379,password=TrickyTrayRedis123
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Redis__ConnectionString: redis:6379,password=TrickyTrayRedis123
+      Kafka__BootstrapServers: kafka:29092
+      Kafka__Topic: trickytray-order-events
+      Kafka__ClientId: trickytray-api
+      Kafka__ConsumerGroupId: trickytray-order-logger
     depends_on:
-      - redis
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    networks:
+      - trickytray-network
+    restart: unless-stopped
+
+  kafka-consumer:
+    build:
+      context: ./TrickyTrayAPI
+      dockerfile: TrickyTray.KafkaConsumer/Dockerfile
+    container_name: trickytray-kafka-consumer
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      Kafka__BootstrapServers: kafka:29092
+      Kafka__Topic: trickytray-order-events
+      Kafka__GroupId: trickytray-order-logger
+      Kafka__ClientId: trickytray-kafka-consumer
+    depends_on:
+      kafka:
+        condition: service_healthy
     networks:
       - trickytray-network
     restart: unless-stopped
@@ -21,12 +48,80 @@ services:
     container_name: trickytray-redis
     ports:
       - "6379:6379"
-    command: redis-server --requirepass TrickyTrayRedis123
+    command:
+      - redis-server
+      - --requirepass
+      - TrickyTrayRedis123
+    volumes:
+      - redis-data:/data
     networks:
       - trickytray-network
     restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:8.3.0
+    hostname: kafka
+    container_name: trickytray-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
     volumes:
-      - redis-data:/data
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - trickytray-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - kafka-topics --bootstrap-server kafka:29092 --list > /dev/null 2>&1 || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: trickytray-kafka-ui
+    ports:
+      - "8081:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: trickytray-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      DYNAMIC_CONFIG_ENABLED: "true"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - trickytray-network
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:8.0
+    container_name: trickytray-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: TrickyTrayMongo123
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - trickytray-network
+    restart: unless-stopped
 
   load-balancer:
     image: nginx:latest
@@ -36,10 +131,11 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - api
+      api:
+        condition: service_started
     networks:
       - trickytray-network
-    restart: unless-stopped   
+    restart: unless-stopped
 
 networks:
   trickytray-network:
@@ -47,3 +143,5 @@ networks:
 
 volumes:
   redis-data:
+  kafka-data:
+  mongo-data:
